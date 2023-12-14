@@ -1,4 +1,4 @@
-module discord_go_bot
+module github.com/ineBallardin/discord_go_bot
 
 go 1.21.4
 
