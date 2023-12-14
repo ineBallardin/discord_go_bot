@@ -11,17 +11,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Command struct {
-	Data    string
-	Execute func()
-}
-
-type Bot struct {
-	Session   *discordgo.Session
-	Cooldowns map[string]string
-	Commands  map[string]Command
-}
-
 var (
 	Token string
 )
