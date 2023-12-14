@@ -8,19 +8,9 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ineBallardin/discord_go_bot/src/bot"
 	"github.com/joho/godotenv"
 )
-
-type Command struct {
-	Data    string
-	Execute func()
-}
-
-type Bot struct {
-	Session   *discordgo.Session
-	Cooldowns map[string]string
-	Commands  map[string]Command
-}
 
 var (
 	Token string
@@ -36,7 +26,7 @@ func init() {
 }
 
 func main() {
-	bot := createBot()
+	bot := bot.CreateBot()
 	dg := createDiscordSession(bot)
 	loadCommands(bot)
 	loadEvents("./src/events", bot)
@@ -45,14 +35,7 @@ func main() {
 	waitForExit()
 }
 
-func createBot() *Bot {
-	return &Bot{
-		Cooldowns: make(map[string]string),
-		Commands:  make(map[string]Command),
-	}
-}
-
-func createDiscordSession(bot *Bot) *discordgo.Session {
+func createDiscordSession(bot *bot.Bot) *discordgo.Session {
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
@@ -62,7 +45,7 @@ func createDiscordSession(bot *Bot) *discordgo.Session {
 	return dg
 }
 
-func loadCommands(bot *Bot) {
+func loadCommands(bot *bot.Bot) {
 	root := "./src/commands"
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -107,7 +90,7 @@ func waitForExit() {
 	<-make(chan struct{})
 }
 
-func loadEvents(root string, bot *Bot) {
+func loadEvents(root string, bot *bot.Bot) {
 	files, err := os.ReadDir(root)
 	if err != nil {
 		fmt.Println(err)
