@@ -59,7 +59,7 @@ func MessageCounter(s *discordgo.Session, m *discordgo.MessageCreate) {
 		channels += fmt.Sprintf("  - <#%s>: %d mensagem(s)\n", channelID, messageCount)
 	}
 
-	_, err = s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Canais:\n%s", stats.UserID, isImpulserPro, channels))
+	_, err = s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Mensagens\n**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Canais:\n%s", stats.UserID, isImpulserPro, channels))
 	if err != nil {
 		log.Println("Erro ao enviar mensagem para o canal:", err)
 	}
