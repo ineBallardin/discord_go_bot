@@ -8,9 +8,9 @@ import (
 )
 
 type ReactionStats struct {
-	UserID    string
-	Roles     []string
-	Reactions map[string]int
+	UserID        string
+	IsImpulserPro bool
+	Reactions     map[string]int
 }
 
 var reactionStats = make(map[string]*ReactionStats)
@@ -34,22 +34,27 @@ func ReactionCounter(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		log.Println("Erro ao obter membro do servidor:", err)
 		return
 	}
-	stats.Roles = make([]string, len(member.Roles))
-	for i, roleID := range member.Roles {
+
+	isImpulserPro := false
+	for _, roleID := range member.Roles {
 		role, err := s.State.Role(r.GuildID, roleID)
 		if err != nil {
 			log.Println("Erro ao obter cargo:", err)
 			continue
 		}
-		stats.Roles[i] = role.Name
+		if role.Name == "impulserPRO" {
+			isImpulserPro = true
+			break
+		}
 	}
+	stats.IsImpulserPro = isImpulserPro
 
 	var reactions string
 	for emojiName, reactionCount := range stats.Reactions {
-		reactions += fmt.Sprintf("  - %s: %d reação(ões)\n", emojiName, reactionCount)
+		reactions += fmt.Sprintf("  - %s %d reação(ões)\n", emojiName, reactionCount)
 	}
 
-	_, err = s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Reações\n**Membro:** <@%s>,\n- Cargos:\n%s\n- Reações:\n%s\n- Total de reações: %d", stats.UserID, stats.Roles, reactions, totalReactions))
+	_, err = s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Reações\n**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Reações:\n%s\n- Total de reações: %d", stats.UserID, stats.IsImpulserPro, reactions, totalReactions))
 	if err != nil {
 		log.Println("Erro ao enviar mensagem para o canal:", err)
 	}
