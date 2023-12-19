@@ -44,7 +44,7 @@ func Bot() {
 	commands.RegisterSlashCommands(dg, guildID)
 	events.RegisterEvents(dg)
 
-	ticker := time.NewTicker(24 * time.Minute)
+	ticker := time.NewTicker(24 * time.Hour)
 
 	go func() {
 		for range ticker.C {
