@@ -9,12 +9,13 @@ import (
 )
 
 type VoiceChannelStats struct {
-	UserID    string
-	Roles     []string
-	ChannelID string
-	JoinTime  time.Time
-	LeaveTime time.Time
-	TotalTime time.Duration
+	UserID        string
+	Roles         []string
+	ChannelID     string
+	JoinTime      time.Time
+	LeaveTime     time.Time
+	TotalTime     time.Duration
+	IsImpulserPro bool
 }
 
 var voiceChannelStats = make(map[string]*VoiceChannelStats)
@@ -31,8 +32,6 @@ func VoiceChannelCounter(s *discordgo.Session, v *discordgo.VoiceStateUpdate) {
 	} else {
 		stats.LeaveTime = time.Now()
 		stats.TotalTime = stats.LeaveTime.Sub(stats.JoinTime)
-		totalTimeInMinutes := stats.TotalTime.Minutes()
-		formattedTotalTime := fmt.Sprintf("%.2f", totalTimeInMinutes)
 		if stats.TotalTime.Minutes() >= 5 {
 			member, err := s.GuildMember(v.GuildID, v.UserID)
 			if err != nil {
@@ -55,13 +54,22 @@ func VoiceChannelCounter(s *discordgo.Session, v *discordgo.VoiceStateUpdate) {
 					break
 				}
 			}
+			stats.IsImpulserPro = isImpulserPro
+		}
+		stats.JoinTime = time.Now()
+		stats.ChannelID = v.ChannelID
+	}
+}
 
-			_, err = s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Canais de Voz\n**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Canal: <#%s>\n- Tempo total: %v minutos", stats.UserID, isImpulserPro, stats.ChannelID, formattedTotalTime))
+func SendVoiceChannelCounts(s *discordgo.Session) {
+	for _, stats := range voiceChannelStats {
+		totalTimeInMinutes := stats.TotalTime.Minutes()
+		formattedTotalTime := fmt.Sprintf("%.2f", totalTimeInMinutes)
+		if totalTimeInMinutes >= 5 {
+			_, err := s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Canais de Voz\n**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Canal: <#%s>\n- Tempo total: %s minutos", stats.UserID, stats.IsImpulserPro, stats.ChannelID, formattedTotalTime))
 			if err != nil {
 				log.Println("Erro ao enviar mensagem para o canal:", err)
 			}
 		}
-		stats.JoinTime = time.Now()
-		stats.ChannelID = v.ChannelID
 	}
 }

@@ -48,14 +48,18 @@ func ReactionCounter(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 		}
 	}
 	stats.IsImpulserPro = isImpulserPro
+}
 
-	var reactions string
-	for emojiName, reactionCount := range stats.Reactions {
-		reactions += fmt.Sprintf("  - %s %d reação(ões)\n", emojiName, reactionCount)
-	}
+func SendReactionCounts(s *discordgo.Session) {
+	for _, stats := range reactionStats {
+		var reactions string
+		for emojiName, reactionCount := range stats.Reactions {
+			reactions += fmt.Sprintf("  - %s %d reação(ões)\n", emojiName, reactionCount)
+		}
 
-	_, err = s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Reações\n**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Reações:\n%s\n- Total de reações: %d", stats.UserID, stats.IsImpulserPro, reactions, totalReactions))
-	if err != nil {
-		log.Println("Erro ao enviar mensagem para o canal:", err)
+		_, err := s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Reações\n**Membro:** <@%s>,\n- **impulserPRO:** %v\n- Reações:\n%s\n- Total de reações: %d", stats.UserID, stats.IsImpulserPro, reactions, totalReactions))
+		if err != nil {
+			log.Println("Erro ao enviar mensagem para o canal:", err)
+		}
 	}
 }
