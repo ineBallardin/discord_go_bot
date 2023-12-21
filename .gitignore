@@ -1,2 +1,4 @@
 .env
 discord_go_bot
+.gitignore
+infra

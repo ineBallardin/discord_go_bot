@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ineBallardin/discord_go_bot/src/commands"
 	"github.com/ineBallardin/discord_go_bot/src/events"
+	"github.com/ineBallardin/discord_go_bot/src/infra"
 	"github.com/joho/godotenv"
 )
 
@@ -40,17 +41,17 @@ func Bot() {
 		fmt.Println("error opening connection,", err)
 	}
 
+	infra.InitializeAppWithServiceAccount()
+
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentMessageContent
 	commands.RegisterSlashCommands(dg, guildID)
 	events.RegisterEvents(dg)
 
-	ticker := time.NewTicker(24 * time.Hour)
+	ticker := time.NewTicker(30 * time.Second)
 
 	go func() {
 		for range ticker.C {
-			events.SendMessageCounts(dg)
-			events.SendReactionCounts(dg)
-			events.SendVoiceChannelCounts(dg)
+			SendUpdates(dg, guildID)
 		}
 	}()
 
@@ -60,4 +61,32 @@ func Bot() {
 	<-sc
 
 	dg.Close()
+}
+
+func SendUpdates(s *discordgo.Session, guildID string) {
+	var messages string
+	for _, memberInfo := range events.GetMemberInfos() {
+		if memberInfo.TotalTime > 0 {
+			minutes := memberInfo.TotalTime / time.Minute
+			seconds := (memberInfo.TotalTime % time.Minute) / time.Second
+			totalTimeInVoiceChannel := fmt.Sprintf("%d.%02ds", minutes, seconds)
+			message := fmt.Sprintf(
+				"## Membro: <@%s>\n    - IsImpulserPro: %v\n    - IsImpulser: %v\n    - Mensagens enviadas: %d\n    - Reações: %d\n    - Tempo em canal de voz: %s\n",
+				memberInfo.UserID,
+				memberInfo.IsImpulserPro,
+				memberInfo.IsImpulser,
+				memberInfo.Messages,
+				memberInfo.Reactions,
+				totalTimeInVoiceChannel,
+			)
+			messages += message
+		}
+	}
+	if messages != "" {
+		title := fmt.Sprintf("# Métricas do dia %s\n", time.Now().Format("02-01-2006"))
+		_, err := s.ChannelMessageSend("1101510837555974176", title+messages)
+		if err != nil {
+			log.Println("Erro ao enviar mensagem para o canal:", err)
+		}
+	}
 }
