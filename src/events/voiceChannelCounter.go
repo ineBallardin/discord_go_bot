@@ -21,16 +21,12 @@ func VoiceChannelCounter(s *discordgo.Session, v *discordgo.VoiceStateUpdate) {
 		memberInfo.JoinTime = time.Now()
 		log.Println("Membro entrou às", memberInfo.JoinTime)
 	} else {
-		memberInfo.LeaveTime = time.Now()
-		memberInfo.TotalTime += memberInfo.LeaveTime.Sub(memberInfo.JoinTime)
-
-		if memberInfo.TotalTime.Minutes() < 5 {
-			return
+		timeInChannel := time.Since(memberInfo.JoinTime)
+		if timeInChannel.Minutes() >= 5 {
+			memberInfo.LeaveTime = time.Now()
+			memberInfo.TotalTime += timeInChannel
+			memberInfo.InfoChanged = true
 		}
 
-		log.Printf("Saiu às: %v\n Ficou %v", memberInfo.LeaveTime, memberInfo.TotalTime)
-
-		memberInfo.JoinTime = time.Now()
-		memberInfo.ChannelID = v.ChannelID
 	}
 }

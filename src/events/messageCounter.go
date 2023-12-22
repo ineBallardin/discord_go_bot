@@ -20,5 +20,7 @@ func MessageCounter(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	memberInfo := HandleEvent(s, member, m.GuildID)
 	memberInfo.Messages++
+	memberInfo.InfoChanged = true
+
 	log.Println("TotalMessages for member", memberInfo.UserID, "is now", memberInfo.Messages)
 }
