@@ -20,9 +20,10 @@ type MemberInfo struct {
 	JoinTime            time.Time
 	LeaveTime           time.Time
 	TotalTime           time.Duration
+	InfoChanged         bool
 }
 
-var memberInfos = make(map[string]*MemberInfo)
+var memberInfos = make([]*MemberInfo, 0)
 
 func HandleEvent(s *discordgo.Session, member *discordgo.Member, guildID string) *MemberInfo {
 	isImpulserPro := false
@@ -43,7 +44,7 @@ func HandleEvent(s *discordgo.Session, member *discordgo.Member, guildID string)
 		}
 	}
 
-	memberInfo, exists := memberInfos[member.User.ID]
+	memberInfo, exists := findMemberInfo(member.User.ID)
 	if !exists {
 		memberInfo = &MemberInfo{
 			UserID:        member.User.ID,
@@ -53,10 +54,18 @@ func HandleEvent(s *discordgo.Session, member *discordgo.Member, guildID string)
 			Reactions:     0,
 			VoiceChannels: make(map[string]int64),
 		}
-		memberInfos[member.User.ID] = memberInfo
+		memberInfos = append(memberInfos, memberInfo)
 	}
-
 	return memberInfo
+}
+
+func findMemberInfo(userID string) (*MemberInfo, bool) {
+	for _, memberInfo := range memberInfos {
+		if memberInfo.UserID == userID {
+			return memberInfo, true
+		}
+	}
+	return nil, false
 }
 
 func FormatMemberInfo(s *discordgo.Session, userID string, guildID string) string {
@@ -68,11 +77,12 @@ func FormatMemberInfo(s *discordgo.Session, userID string, guildID string) strin
 
 	memberInfo := HandleEvent(s, member, guildID)
 
-	if memberInfo.Messages > 0 || memberInfo.Reactions > 0 || len(memberInfo.VoiceChannels) > 0 {
-		log.Println(memberInfo)
+	if memberInfo.InfoChanged {
+		log.Println("As informações dos membros foram atualizadas")
+		memberInfo.InfoChanged = false
 		return fmt.Sprintf(
 			"## Métricas do dia %s\n- Membro: <@%s>\n    - IsImpulserPro: %v\n    - IsImpulser: %v\n    - Mensagens enviadas: %d\n    - Reações: %d\n    - Tempo em canal de voz: %.2f",
-			time.Now().Format("02-01-2006"),
+			time.Now().Format("02/01/2006"),
 			memberInfo.UserID,
 			memberInfo.IsImpulserPro,
 			memberInfo.IsImpulser,
@@ -82,10 +92,9 @@ func FormatMemberInfo(s *discordgo.Session, userID string, guildID string) strin
 		)
 	}
 
-	log.Println("HandleEvent returning", memberInfo)
 	return ""
 }
 
-func GetMemberInfos() map[string]*MemberInfo {
+func GetMemberInfos() []*MemberInfo {
 	return memberInfos
 }
