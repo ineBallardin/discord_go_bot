@@ -22,7 +22,7 @@ func VoiceChannelCounter(s *discordgo.Session, v *discordgo.VoiceStateUpdate) {
 		log.Println("Membro entrou às", memberInfo.JoinTime)
 	} else {
 		memberInfo.LeaveTime = time.Now()
-		memberInfo.TotalTime = memberInfo.LeaveTime.Sub(memberInfo.JoinTime)
+		memberInfo.TotalTime += memberInfo.LeaveTime.Sub(memberInfo.JoinTime)
 
 		if memberInfo.TotalTime.Minutes() < 5 {
 			return
@@ -34,16 +34,3 @@ func VoiceChannelCounter(s *discordgo.Session, v *discordgo.VoiceStateUpdate) {
 		memberInfo.ChannelID = v.ChannelID
 	}
 }
-
-// func SendVoiceChannelCounts(s *discordgo.Session) {
-// 	for _, stats := range voiceChannelStats {
-// 		totalTimeInMinutes := stats.TotalTime.Minutes()
-// 		formattedTotalTime := fmt.Sprintf("%.2f", totalTimeInMinutes)
-// 		if totalTimeInMinutes >= 5 {
-// 			_, err := s.ChannelMessageSend("1101510837555974176", fmt.Sprintf("## Contador de Canais de Voz\n- **Membro:** <@%s>,\n- **impulserPRO:** %v\n- **impulser:** %v\n- Canal: <#%s>\n- Tempo total: %s minutos", stats.UserID, stats.IsImpulserPro, stats.IsImpulser, stats.ChannelID, formattedTotalTime))
-// 			if err != nil {
-// 				log.Println("Erro ao enviar mensagem para o canal:", err)
-// 			}
-// 		}
-// 	}
-// }

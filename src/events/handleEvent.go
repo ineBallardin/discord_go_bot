@@ -72,7 +72,7 @@ func FormatMemberInfo(s *discordgo.Session, userID string, guildID string) strin
 		log.Println(memberInfo)
 		return fmt.Sprintf(
 			"## Métricas do dia %s\n- Membro: <@%s>\n    - IsImpulserPro: %v\n    - IsImpulser: %v\n    - Mensagens enviadas: %d\n    - Reações: %d\n    - Tempo em canal de voz: %.2f",
-			time.Now().Format("2006-01-02"),
+			time.Now().Format("02-01-2006"),
 			memberInfo.UserID,
 			memberInfo.IsImpulserPro,
 			memberInfo.IsImpulser,
